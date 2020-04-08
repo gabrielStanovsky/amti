@@ -51,6 +51,7 @@ See the A Mechanical Turk Interface documentation for details.
 #    |  |- hittypeproperties.json : properties for the HIT Type
 #    |  |- hitproperties.json : properties for the HIT
 #    |- data.jsonl : data used to generate each HIT in the batch
+#    |- tracking.jsonl : a mapping from hit id to the input data used to render it
 #    |- results : results from the HITs on the MTurk site
 #    |  |- hit-$ID : results for a single HIT from the batch
 #    |  |  |- hit.jsonl : data about the HIT from the MTurk site
@@ -76,6 +77,7 @@ BATCH_DIR_STRUCTURE = ('batch-{batch_id}', {
         'hit_properties': ('hitproperties.json', {})
     }),
     'data': ('data.jsonl', {}),
+    'tracking': ('tracking.jsonl', {}),
     'results': ('results', {
         'hit_dir': ('hit-{hit_id}', {
             'hit': ('hit.jsonl', {}),

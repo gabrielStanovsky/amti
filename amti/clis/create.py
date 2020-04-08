@@ -68,6 +68,7 @@ def create_batch(definition_dir, data_path, save_dir, live, verify, force):
     will be saved.
     """
     env = 'live' if live else 'sandbox'
+    logging.info(f"Enviroment is {env}")
 
     worker_url = settings.ENVS[env]['worker_url']
 

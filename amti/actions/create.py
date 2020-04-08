@@ -238,6 +238,7 @@ def upload_batch(
         definition_dir_subpaths['hittype_properties']
     hit_properties_file_name, _ = definition_dir_subpaths['hit_properties']
     data_file_name, _ = batch_dir_subpaths['data']
+    tracking_file_name, _ = batch_dir_subpaths['tracking']
 
     batchid_path = os.path.join(
         batch_dir, batchid_file_name)
@@ -255,6 +256,8 @@ def upload_batch(
         hit_properties_file_name)
     data_path = os.path.join(
         batch_dir, data_file_name)
+    tracking_path = os.path.join(
+        batch_dir, tracking_file_name)
 
     # load relevant data
     with open(batchid_path, 'r') as batchid_file:
@@ -277,7 +280,8 @@ def upload_batch(
     logger.debug(f'New HIT Type (ID: {hittype_id}) created.')
 
     hit_ids = []
-    with open(data_path, 'r') as data_file:
+    with open(data_path, 'r') as data_file, \
+         open(tracking_path, "w", encoding = "utf8") as tracking_file:
         for i, ln in enumerate(data_file):
             if ln.strip() == '':
                 logger.warning(f'Line {i+1} in {data_path} is empty. Skipping.')
@@ -296,6 +300,9 @@ def upload_batch(
             hit_id = hit_response['HIT']['HITId']
             logger.debug(f'Created New HIT (ID: {hit_id}).')
             hit_ids.append(hit_id)
+
+            # write tracking data to file
+            tracking_file.write(json.dumps((hit_id, ln_data)) + "\n")
 
     ids = {
         'hittype_id': hittype_id,

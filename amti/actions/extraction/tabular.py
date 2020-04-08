@@ -7,6 +7,7 @@ import logging
 import os
 from xml.dom import minidom
 
+
 import click
 
 from amti import settings
@@ -66,13 +67,21 @@ def tabular(
     _, hit_dir_subpaths = results_dir_subpaths['hit_dir']
     hit_file_name, _ = hit_dir_subpaths['hit']
     assignments_file_name, _ = hit_dir_subpaths['assignments']
+    tracking_file_name, _ = batch_dir_subpaths['tracking']
 
     batchid_file_path = os.path.join(
         batch_dir, batchid_file_name)
     results_dir = os.path.join(batch_dir, results_dir_name)
+    tracking_path = os.path.join(
+        batch_dir, tracking_file_name)
+
 
     with open(batchid_file_path) as batchid_file:
         batch_id = batchid_file.read().strip()
+
+    with open(tracking_path) as tracking_file:
+        # get mapping from hit id to input fields
+        tracking_dict = dict([json.loads(line.strip()) for line in tracking_file])
 
     logger.info(
         f'Beginning to extract batch {batch_id} to tabular format.')
@@ -116,7 +125,8 @@ def tabular(
             row = {}
 
             # add relevant metadata from the HIT
-            row['HITId'] = hit['HIT']['HITId']
+            hit_id = hit['HIT']['HITId']
+            row['HITId'] = hit_id
             row['AssignmentDurationInSeconds'] =\
                 hit['HIT']['AssignmentDurationInSeconds']
             row['AutoApprovalDelayInSeconds'] =\
@@ -132,6 +142,13 @@ def tabular(
             row['AcceptTime'] = assignment['AcceptTime']
             row['SubmitTime'] = assignment['SubmitTime']
             row['ApprovalTime'] = assignment['ApprovalTime']
+
+            try:
+                # add tracking info
+                row["Inputs"] = tracking_dict[hit_id]
+            except Exception as e:
+                logging.warn(f"Couldn't find hit {hit_id} in {tracking_file_name}")
+                raise e
 
             # parse the response and add it to the row
             xml = minidom.parseString(assignment['Answer'])
